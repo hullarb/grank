@@ -1,6 +1,6 @@
 # grank
 
-This repository contains the source code of the tools used by [grank.io](https://grank.io).
+This repository contains the source code of the tools used by [grank.io](http://grank.io).
 
 To be able to compute the PageRank of the golang github repositories the following steps are needed:
 
