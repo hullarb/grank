@@ -93,7 +93,7 @@ func getAllPages(q string) int {
 			continue
 		}
 		for i, r := range repos.Repositories {
-			if i != 0 || q != "language:go" {
+			if i != 0 || last != 0 || q != "language:go" {
 				if _, err = out.Write([]byte{',', '\n'}); err != nil {
 					log.Fatal(err)
 				}
