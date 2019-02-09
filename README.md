@@ -18,16 +18,16 @@ REPOS_JSON="repos.json"
 GH_TOKEN=GITHUB_API_TOKEN go run ./lsrepo/ ${REPOS_JSON} 2> ${REPOS_JSON}.log
 
 DOWNLOAD_DIR=`pwd`"/repos/"
-go run ./fetcharchive/ -rep ${REPOS_JSON} -d ${DOWNLOAD_DIR} 2> fetch_arch_${TS}.log
+go run ./fetcharchive/ -rep ${REPOS_JSON} -d ${DOWNLOAD_DIR} 2> fetch_arch.log
 
 DEPS="deps.csv"
 go run ./buildg/ -r ${DOWNLOAD_DIR}github.com -o ${DEPS} 2> ${DEPS}.log
 
 PKG_REPOS="pkg_repos.json"
 if [ ! -f ${PKG_REPOS} ]; then
-    go run ./resolver/ -d ${DEPS} -o ${PKG_REPOS}  2> resolver_${TS}.log
+    go run ./resolver/ -d ${DEPS} -o ${PKG_REPOS}  2> resolver.log
 else
-    go run ./resolver/ -d ${DEPS} -o ${PKG_REPOS} -r ${PKG_REPOS} 2> resolver_${TS}.log
+    go run ./resolver/ -d ${DEPS} -o ${PKG_REPOS} -r ${PKG_REPOS} 2> resolver.log
 fi
 
 DG="dg.json"
