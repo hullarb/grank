@@ -133,7 +133,7 @@ func untar(dst string, r io.Reader, excl []string) error {
 		case header == nil:
 			continue
 		}
-		if excluded(header.Name, excl) {
+		if excluded(header.Typeflag == tar.TypeReg, header.Name, excl) {
 			continue
 		}
 		ni := strings.Index(header.Name, "/")
@@ -178,7 +178,10 @@ func untar(dst string, r io.Reader, excl []string) error {
 	}
 }
 
-func excluded(path string, excl []string) bool {
+func excluded(file bool, path string, excl []string) bool {
+	if file && filepath.Ext(path) != "go" {
+		return true
+	}
 	parts := strings.Split(path, string(filepath.Separator))
 	for _, p := range parts {
 		for _, e := range excl {
