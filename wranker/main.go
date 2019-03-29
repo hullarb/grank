@@ -17,14 +17,16 @@ import (
 )
 
 type pkg struct {
-	ID      uint32  `json:"id"`
-	Name    string  `json:"name"`
-	Rank    float64 `json:"rank"`
-	PRank   int     `json:"prank"`
-	GRank   int     `json:"grank"`
-	SRank   int     `json:"srank"`
-	Stars   int     `json:"stars"`
-	Imports int     `json:"imports"`
+	ID          uint32   `json:"id"`
+	Name        string   `json:"name"`
+	Rank        float64  `json:"rank"`
+	PRank       int      `json:"prank"`
+	GRank       int      `json:"grank"`
+	SRank       int      `json:"srank"`
+	Stars       int      `json:"stars"`
+	Imports     int      `json:"imports"`
+	Description string   `json:"description"`
+	Topics      []string `json:"topics"`
 }
 
 type dependency struct {
@@ -89,6 +91,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	reposByName := map[string]github.Repository{}
 	var ord int
 	for _, r := range repos {
 		rn := "github.com/" + strings.ToLower(r.GetFullName())
@@ -97,6 +100,7 @@ func main() {
 			starOrd[rn] = ord
 			ord++
 		}
+		reposByName[rn] = r
 	}
 
 	repoURLs := map[string]string{}
@@ -163,11 +167,16 @@ func main() {
 				grank++
 			}
 		}
+		repo := reposByName[r.Name]
 		dg.Pkgs[i].ID = nodes[r.Name]
 		dg.Pkgs[i].PRank = rank
 		dg.Pkgs[i].SRank = starOrd[r.Name]
 		dg.Pkgs[i].Stars = w[r.Name]
 		dg.Pkgs[i].Imports = refs[dg.Pkgs[i].ID]
+		if repo.Description != nil {
+			dg.Pkgs[i].Description = *repo.Description
+		}
+		dg.Pkgs[i].Topics = repo.Topics
 		r = dg.Pkgs[i]
 		fmt.Printf("%d,%d,%d,%s,%v,%d,%d\n", i, r.SRank, r.PRank, r.Name, r.Rank, r.Stars, r.Imports)
 		if r.Rank != prev {
