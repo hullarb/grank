@@ -152,20 +152,28 @@ func main() {
 	sort.Slice(dg.Pkgs, func(i, j int) bool {
 		return dg.Pkgs[i].Rank > dg.Pkgs[j].Rank
 	})
-	gr := 0
+	rank := 1
+	grank := 0
+	prev := .0
 	for i, r := range dg.Pkgs {
 		dg.Pkgs[i].GRank = -1
 		if strings.Contains(r.Name, "github.com/") {
-			dg.Pkgs[i].GRank = gr
-			gr++
+			dg.Pkgs[i].GRank = grank
+			if r.Rank != prev {
+				grank++
+			}
 		}
 		dg.Pkgs[i].ID = nodes[r.Name]
-		dg.Pkgs[i].PRank = i
+		dg.Pkgs[i].PRank = rank
 		dg.Pkgs[i].SRank = starOrd[r.Name]
 		dg.Pkgs[i].Stars = w[r.Name]
 		dg.Pkgs[i].Imports = refs[dg.Pkgs[i].ID]
 		r = dg.Pkgs[i]
 		fmt.Printf("%d,%d,%d,%s,%v,%d,%d\n", i, r.SRank, r.PRank, r.Name, r.Rank, r.Stars, r.Imports)
+		if r.Rank != prev {
+			rank++
+		}
+		prev = r.Rank
 	}
 
 	var sdg dgraph
