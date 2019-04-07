@@ -279,7 +279,7 @@ func cleanSrc(p string) string {
 }
 
 func clean(d string) string {
-	d = strings.ToLower(d)
+	d = strings.ToLower(strings.Replace(d, srcPref, "", 1))
 	parts := strings.Split(d, "/")
 	for i := len(parts) - 1; i >= 0; i-- {
 		if parts[i] == "src" || parts[i] == "vendor" || parts[i] == "_vendor" || strings.ToLower(parts[i]) == "c" {
