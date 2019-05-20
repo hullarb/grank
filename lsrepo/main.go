@@ -90,7 +90,8 @@ func fetchMissing(repoFiles []string) {
 				continue
 			}
 			log.Printf("fetching missing: %s", r.GetFullName())
-			for {
+			stop := false
+			for !stop {
 				rp, resp, err := client.Repositories.Get(context.Background(), r.GetOwner().GetLogin(), r.GetName())
 				if err != nil {
 					if _, ok := err.(*github.RateLimitError); ok {
@@ -98,7 +99,9 @@ func fetchMissing(repoFiles []string) {
 						time.Sleep(10 * time.Second)
 						continue
 					} else {
-						log.Fatalf("failed to fetch %s: %v", r.GetFullName(), err)
+						log.Printf("failed to fetch %s: %v", r.GetFullName(), err)
+						stop = true
+						continue
 					}
 				}
 				if _, err = out.Write([]byte{',', '\n'}); err != nil {
