@@ -1,0 +1,38 @@
+# github.com/KyleBanks/depth v1.2.1
+## explicit
+github.com/KyleBanks/depth
+# github.com/alixaxel/pagerank v0.0.0-20160306110729-14bfb4c1d88c
+## explicit
+github.com/alixaxel/pagerank
+# github.com/golang/protobuf v1.2.0
+github.com/golang/protobuf/proto
+# github.com/google/go-github v17.0.0+incompatible
+## explicit
+github.com/google/go-github/github
+# github.com/google/go-querystring v1.0.0
+## explicit
+github.com/google/go-querystring/query
+# golang.org/x/mod v0.2.0
+## explicit
+golang.org/x/mod/internal/lazyregexp
+golang.org/x/mod/modfile
+golang.org/x/mod/module
+golang.org/x/mod/semver
+# golang.org/x/net v0.0.0-20190620200207-3b0461eec859
+golang.org/x/net/context
+golang.org/x/net/context/ctxhttp
+# golang.org/x/oauth2 v0.0.0-20190130055435-99b60b757ec1
+## explicit
+golang.org/x/oauth2
+golang.org/x/oauth2/internal
+# golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898
+golang.org/x/xerrors
+golang.org/x/xerrors/internal
+# google.golang.org/appengine v1.4.0
+google.golang.org/appengine/internal
+google.golang.org/appengine/internal/base
+google.golang.org/appengine/internal/datastore
+google.golang.org/appengine/internal/log
+google.golang.org/appengine/internal/remote_api
+google.golang.org/appengine/internal/urlfetch
+google.golang.org/appengine/urlfetch
