@@ -211,7 +211,8 @@ func untar(dst string, r io.Reader, excl []string) error {
 }
 
 func excluded(file bool, path string, excl []string) bool {
-	if file && filepath.Ext(path) != ".go" {
+	if file && filepath.Ext(path) != ".go" &&
+		filepath.Base(path) != "go.mod" && filepath.Base(path) != "go.sum" {
 		return true
 	}
 	parts := strings.Split(path, string(filepath.Separator))
