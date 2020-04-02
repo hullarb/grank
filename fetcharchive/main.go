@@ -5,19 +5,25 @@ import (
 	"compress/gzip"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/google/go-github/github"
 )
 
+const maxRetries = 5
+
 func main() {
 	reposFile := flag.String("rep", "", "path of the repos.json")
 	downloadDir := flag.String("d", "download", "path where repos should be downloaded")
+	n := flag.Int("n", 6, "number of concurent downloads")
 	flag.Parse()
 	*downloadDir = filepath.Join(*downloadDir, "github.com/") + string(filepath.Separator)
 	inp, err := os.Open(*reposFile)
@@ -31,75 +37,101 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Printf("%d repositories were loaded from %s", len(repos), *reposFile)
+	dCh := make(chan github.Repository)
+	var wg sync.WaitGroup
+	for i := 0; i < *n; i++ {
+		go func() {
+			wg.Add(1)
+			for r := range dCh {
+				dc := 0
+				for err == nil || dc < maxRetries {
+					if dc > 0 {
+						time.Sleep((2 << (1 + dc)) * time.Second)
+					}
+					log.Printf("downloading: %s", r.GetFullName())
+					err = download(*downloadDir, r.GetArchiveURL(), r.GetFullName())
+					if err != nil {
+						log.Printf("downloading %s failed: %v", r.GetFullName(), err)
+					} else {
+						log.Printf("successfully downloaded %s", r.GetFullName())
+						break
+					}
+					dc++
+				}
+			}
+			wg.Done()
+		}()
+	}
 	for i, r := range repos {
 		if r.GetFullName() == "" {
 			log.Printf("ERROR: empty full name: %d", i)
 		}
 		if _, err := os.Stat(*downloadDir + r.GetFullName()); os.IsNotExist(err) {
-			download(*downloadDir, r.GetArchiveURL(), r.GetFullName())
+			dCh <- r
 		} else {
 			log.Printf("skipping %s: %v", r.GetFullName(), err)
 		}
+		if i%100 == 0 {
+			log.Printf("status: %d/%d", i, len(repos))
+		}
 	}
+	close(dCh)
+	wg.Wait()
 }
 
 var excludedDirs = []string{"vendor", "Godeps", "_vendor", "workspace", "_workspace"}
 
 //https://api.github.com/repos/moby/moby/{archive_format}{/ref}
-func download(ddir string, url string, repo string) {
+func download(ddir string, url string, repo string) error {
 	url = strings.Replace(url, "{archive_format}", "tarball", 1)
 	url = strings.Replace(url, "{/ref}", "/master", 1)
 	log.Printf("downloading: %s", url)
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Printf("failed to download: %v", err)
-		return
+		return fmt.Errorf("failed to download: %v", err)
+
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("bas status: %v", resp.StatusCode)
-		return
+		if resp.StatusCode == http.StatusNotFound {
+			log.Printf("bad status: %v, skip retrying ", resp.StatusCode)
+			return nil
+		}
+		return fmt.Errorf("bad status: %v", resp.StatusCode)
 	}
 	archive := resp.Header["Content-Disposition"][0]
 	if !strings.Contains(archive, "filename=") {
-		log.Printf("cannot find filename: %v", resp.Header)
-		return
+		return fmt.Errorf("cannot find filename: %v", resp.Header)
 	}
 	archive = strings.Split(archive, "filename=")[1]
 	af, err := os.Create(archive)
 	if err != nil {
-		log.Printf("failed to create file with name %s: %v", archive, err)
-		return
+		return fmt.Errorf("failed to create file with name %s: %v", archive, err)
 	}
 	_, err = io.Copy(af, resp.Body)
 	af.Close()
 	if err != nil {
-		log.Printf("failed to save file with name %s: %v", archive, err)
-		return
+		return fmt.Errorf("failed to save file with name %s: %v", archive, err)
 	}
 	log.Printf("file %s saved", archive)
 	af, err = os.Open(archive)
 	if err != nil {
-		log.Printf("failed to open archive: %v", err)
-		return
+		return fmt.Errorf("failed to open archive: %v", err)
 	}
 	err = untar(ddir+repo, af, excludedDirs)
 	if err != nil {
-		log.Printf("failed to untar archive: %v", err)
-		return
+		return fmt.Errorf("failed to untar archive: %v", err)
 	}
-	log.Print("archive extracted to %s", ddir+repo)
+	log.Printf("archive extracted to %s", ddir+repo)
 	err = af.Close()
 	if err != nil {
-		log.Printf("failed to close archive: %v", err)
-		return
+		return fmt.Errorf("failed to close archive: %v", err)
 	}
 	err = os.Remove(archive)
 	if err != nil {
-		log.Printf("failed to remove archive: %v", err)
-		return
+		return fmt.Errorf("failed to remove archive: %v", err)
 	}
-	log.Print("download finished")
+	return nil
 }
 
 // https://medium.com/@skdomino/taring-untaring-files-in-go-6b07cf56bc07
