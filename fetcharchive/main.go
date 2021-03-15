@@ -49,7 +49,7 @@ func main() {
 						time.Sleep((2 << (1 + dc)) * time.Second)
 					}
 					log.Printf("downloading: %s", r.GetFullName())
-					err = download(*downloadDir, r.GetArchiveURL(), r.GetFullName())
+					err = download(*downloadDir, r.GetArchiveURL(), r.GetFullName(), r.GetDefaultBranch())
 					if err != nil {
 						log.Printf("downloading %s failed: %v", r.GetFullName(), err)
 					} else {
@@ -82,9 +82,13 @@ func main() {
 var excludedDirs = []string{"vendor", "Godeps", "_vendor", "workspace", "_workspace"}
 
 //https://api.github.com/repos/moby/moby/{archive_format}{/ref}
-func download(ddir string, url string, repo string) error {
+func download(ddir, url, repo, branch string) error {
+	if branch == "" {
+		log.Printf("branch empty for %s",repo)
+		branch = "master"
+	}
 	url = strings.Replace(url, "{archive_format}", "tarball", 1)
-	url = strings.Replace(url, "{/ref}", "/master", 1)
+	url = strings.Replace(url, "{/ref}", "/" + branch, 1)
 	log.Printf("downloading: %s", url)
 	resp, err := http.Get(url)
 	if err != nil {
