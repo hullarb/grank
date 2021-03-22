@@ -3,7 +3,6 @@ module github.com/hullarb/grank
 go 1.14
 
 require (
-	github.com/KyleBanks/depth v1.2.1
 	github.com/alixaxel/pagerank v0.0.0-20160306110729-14bfb4c1d88c
 	github.com/google/go-github v17.0.0+incompatible
 	github.com/google/go-querystring v1.0.0 // indirect
