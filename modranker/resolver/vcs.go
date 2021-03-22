@@ -1,6 +1,6 @@
 // functions reused from go source repo: https://github.com/golang/go/blob/da0d1a44bac379f5acedb1933f85400de08f4ac6/src/cmd/go/internal/get/vcs.go
 
-package main
+package resolver
 
 import (
 	"errors"
@@ -38,7 +38,7 @@ type RepoRoot struct {
 // statically known by repoRootForImportPathStatic.
 //
 // This handles custom import paths like "name.tld/pkg/foo" or just "name.tld".
-func repoRootForImportDynamic(importPath string, mod ModuleMode) (*RepoRoot, error) {
+func RepoRootForImportDynamic(importPath string, mod ModuleMode) (*RepoRoot, error) {
 	slash := strings.Index(importPath, "/")
 	if slash < 0 {
 		slash = len(importPath)

@@ -10,7 +10,7 @@
 // to avoid needing to build net (and thus use cgo) during the
 // bootstrap process.
 
-package main
+package resolver
 
 import (
 	"crypto/tls"

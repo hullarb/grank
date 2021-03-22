@@ -5,7 +5,7 @@
 
 // Package singleflight provides a duplicate function call suppression
 // mechanism.
-package main
+package resolver
 
 import "sync"
 
