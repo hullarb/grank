@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"log"
 	"os"
@@ -188,12 +189,12 @@ func nodeID(nn string) uint32 {
 func findModules(dir string) ([]mod, error) {
 	var modules []mod
 	moduleFiles := map[string]string{}
-	return modules, filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
+	return modules, filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			log.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 			return err
 		}
-		if info.IsDir() || filepath.Base(path) != "go.mod" {
+		if d.IsDir() || filepath.Base(path) != "go.mod" {
 			return nil
 		}
 		c, err := ioutil.ReadFile(path)
